@@ -1,0 +1,1 @@
+Has only one script for now: a simple script to shift k-times of songs in Aegisub without changing the line timings themselves.
