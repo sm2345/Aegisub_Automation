@@ -15,7 +15,7 @@ Usage:
 
 Just select the lines that need adjustment after shifting the timings, and enter the offset (positive for "forward" shifting, negative for "backward" shifting) and hit OK.
 
-As of version 0.1, this can only work on lines that are selected. Also, it takes the first {\k} value. Also works for \kf, \ko and \kt tags too.
+As of version 0.15, this can only work on lines that are selected. Also, it takes the first {\k} value. Also works for \kf, \ko and \kt tags too.
 
 TODO:
 1)Make it work for any selected styles (OP Romaji etc etc)
@@ -23,8 +23,16 @@ TODO:
 
 Acknowledgements:
 
-First up, many thanks to lyger for making this awesome automation-writing guide at http://unanimated.github.io/ts/lua/ts-auto_tutorial.htm It acquianted me with the basics and helped a lot.
+First up, many thanks to lyger for making this awesome automation-writing guide at http://unanimated.github.io/ts/lua/ts-auto_tutorial.htm 
+It acquainted me with the basics and helped a lot, and it also forms the skeleton of this script.
+
 Also, many thanks to the awesome folks at #Irrational-typesetting-wizardry@irc.rizon.net for their continued advice!
+
+Version History:
+
+Version 0.10, 15th June, 2014: Initial release
+Version 0.15, 16th June, 2014: Changed global variables to local where possible, and also replaced .. with string.format. 
+                               Should be faster now. Oh, and added this Version History section.
 
 ]]
 include("karaskel.lua") 
@@ -33,7 +41,7 @@ include("karaskel.lua")
 script_name="Songs' k-times shifter"
 script_description="Shifts the k-times of lines by a given offset (positive or negative) without changing the line timings themselves"
 script_author="sm2345"
-script_version="0.1"
+script_version="0.15"
 
 
 function shift_ktimes(sub, sel, act)
@@ -41,7 +49,7 @@ function shift_ktimes(sub, sel, act)
 	--Collect info
 	local meta, styles = karaskel.collect_head(sub,false) 
 	
-dialog_config=
+local dialog_config=
 {
     {
         class="dropdown",name="styleselect",
@@ -68,7 +76,7 @@ dialog_config=
     }
 } 
 
-pressed, results = aegisub.dialog.display(dialog_config)
+local pressed, results = aegisub.dialog.display(dialog_config)
 
 if pressed=="Cancel" then
     aegisub.cancel()
@@ -84,7 +92,7 @@ end
 	--	duration = string.match(k_tag, '{\\k[fot]?(%d+)}') --Take 12 from the {\k12}, could've done this in one step I think, but kept it like this for better clarity
 	--	duration = duration + count --Add the user-specified offset
 		
-		duration = tonumber(string.match(line.text, '{.-\\k[oft]?(%--%d+)')) 
+		local duration = tonumber(string.match(line.text, '{.-\\k[oft]?(%--%d+)')) 
 		--[[
 			Explanation of the pattern:
 			
@@ -103,11 +111,11 @@ end
 		]]
 		--The amount we need to shift, 4 = 1 frame.
 		
-		duration2 = duration + results.shift_amt
+		duration = duration + results.shift_amt
 		
 		--Find the actual number value of the first \k tag, and replace it with the changed one
 		--We need to preserve value of all things before and after the duration, and ensure everything is replaced only once
-		line.text = string.gsub(line.text, '({.-\\k[oft]?)(%--%d+)', '%1'..duration2, 1) 
+		line.text = string.gsub(line.text, '({.-\\k[oft]?)(%--%d+)', string.format("%s%d", '%1', duration), 1) 
 		
 		--Put the line back in the subtitles
 		sub[li] = line
